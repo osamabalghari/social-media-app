@@ -1,5 +1,6 @@
 require("dotenv").config()
 const jwt = require("jsonwebtoken")
+const multer = require("multer")
 
 const userAuth = (req, res, next) => {
     try {
@@ -15,4 +16,20 @@ const userAuth = (req, res, next) => {
         res.status(400).json({ success: false, message: error.message })
     }
 }
-module.exports = { userAuth }
+
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/')
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, file.fieldname + '-' + uniqueSuffix + "." + file.mimetype.split("/")[1]
+        )
+    }
+})
+
+const upload = multer({ storage: storage }).single('avatar')
+
+
+module.exports = { userAuth, upload }

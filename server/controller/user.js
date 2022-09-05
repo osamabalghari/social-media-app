@@ -1,4 +1,5 @@
 const User = require("../model/User")
+const Post = require("../model/Posts")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 
@@ -38,7 +39,7 @@ const signIn = async (req, res) => {
 
 const getOneUser = async (req, res) => {
     try {
-        const user = await User.findOne({ email: req.user.email })
+        const user = await User.findById({ _id: req.user._id })
         res.status(200).json({ success: true, user })
     } catch (error) {
         res.status(400).json({ success: false, message: error.message })
@@ -75,6 +76,31 @@ const followUser = async (req, res) => {
     }
 }
 
-module.exports = { register, signIn, getOneUser, followUser }
+const getMyPosts = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        const posts = [];
+
+        for (let i = 0; i < user.posts.length; i++) {
+            const post = await Post.findById(user.posts[i]).populate(
+                "likes comments.user owner"
+            );
+            posts.push(post);
+        }
+
+        res.status(200).json({
+            success: true,
+            posts,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+module.exports = { register, signIn, getOneUser, followUser, getMyPosts }
 
 

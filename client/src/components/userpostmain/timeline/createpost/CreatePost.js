@@ -1,11 +1,42 @@
-import React from 'react'
+import React, { useState, useContext, useEffect } from 'react'
+import { useRef } from 'react'
+import postContext from '../../../../context/postContext/postContext'
 
 const CreatePost = () => {
+    const [image, setImage] = useState({})
+    const [caption, setCaption] = useState("")
+    const ref = useRef()
+    //const [data, setData] = useState([])
+    const context = useContext(postContext)
+    const { setData, data } = context
+    const showFile = () => {
+        ref.current.click()
+    }
+    const handleCreatePost = async () => {
+        const formData = new FormData()
+        formData.append("avatar", image)
+        formData.append("caption", caption)
+        const response = await fetch("http://localhost:3002/api/post/createpost", {
+            method: "POST",
+            body: formData
+        })
+        const json = await response.json()
+        //console.log(json);
+        setData(json)
+
+    }
+    useEffect(() => {
+        console.log(data);
+    }, [])
+
     return (
         <div class="bg-white p-3 mt-3 rounded border shadow">
-
+            <form action="/createpost" method="post" enctype="multipart/form-data" className='d-none'>
+                <input type="file" name="avatar" onChange={(e) => { setImage(e.target.files[0]) }} ref={ref} />
+            </form>
             <div class="d-flex" type="button">
                 <div class="p-1">
+
                     <img
                         src="https://source.unsplash.com/collection/happy-people"
                         alt="avatar"
@@ -86,6 +117,8 @@ const CreatePost = () => {
                                             cols="30"
                                             rows="5"
                                             class="form-control border-0"
+                                            onChange={(e) => { setCaption(e.target.value) }}
+                                            value={caption}
                                         ></textarea>
                                     </div>
 
@@ -113,7 +146,7 @@ const CreatePost = () => {
                                         <p class="m-0">Add to your post</p>
                                         <div>
                                             <i
-                                                class="fas fa-images fs-5 text-success pointer mx-1"
+                                                class="fas fa-images fs-5 text-success pointer mx-1" onClick={showFile}
                                             ></i>
                                             <i
                                                 class="fas fa-user-check fs-5 text-primary pointer mx-1"
@@ -139,7 +172,7 @@ const CreatePost = () => {
                         </div>
 
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary w-100">
+                            <button class="btn btn-primary w-100" onClick={handleCreatePost}>
                                 Post
                             </button>
                         </div>
